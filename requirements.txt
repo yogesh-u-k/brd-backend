@@ -5,3 +5,5 @@ requests
 python-dotenv
 python-multipart
 pydantic
+httpx
+typing
