@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import base, auth, issues,load,getStories,createStories
+from routers import base, auth, issues,load,getStories,createStories,getProjects
 import uvicorn
 app = FastAPI()
 
@@ -20,6 +20,7 @@ app.include_router(issues.router, tags=["Issues"])
 app.include_router(load.router, tags=["load"]) 
 app.include_router(getStories.router, tags=["getStories"])  
 app.include_router(createStories.router, tags=["createStories"])  
+app.include_router(getProjects.router,  tags=["getProjects"])
 
 
 if __name__ == "__main__":

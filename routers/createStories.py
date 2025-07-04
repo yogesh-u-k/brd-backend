@@ -31,9 +31,9 @@ async def create_stories(
     payload: WrappedStories = Body(...)
 ):
     flattened_stories = payload.flattened_stories
-    token = authorization.replace("Bearer ", "")
+    # token = authorization.replace("Bearer ", "")
     headers = {
-        "Authorization": f"Bearer {token}",
+        "Authorization": f"Bearer {authorization}",
         "Accept": "application/json",
         "Content-Type": "application/json"
     }
