@@ -1,22 +1,22 @@
 from fastapi import APIRouter, Request, Header, HTTPException
 import requests
 import json
-
+from typing import Optional
 router = APIRouter()
 # CLOUD_ID = "b574c564-8337-4c3b-8e84-786d837d294b"  # In-memory store (can use database/session in prod)
-CLOUD_ID = "961741a0-c80a-4729-a1ba-2123a30bfb44"
+# CLOUD_ID = "961741a0-c80a-4729-a1ba-2123a30bfb44"
 
 @router.get("/jira-issues")
-def get_issues(authorization: str = Header(None)):
+def get_issues(authorization: Optional[str] = Header(None)):
     print(authorization)
-    if not authorization:
-        raise HTTPException(status_code=401, detail="Missing Jira access token")
-    token = authorization.split(" ")[1]
+    # if not authorization:
+    #     raise HTTPException(status_code=401, detail="Missing Jira access token")
+    # token = authorization.split(" ")[1]
 
     global CLOUD_ID
     resource_res = requests.get(
         "https://api.atlassian.com/oauth/token/accessible-resources",
-        headers={"Authorization": f"Bearer {token}"},
+        headers={"Authorization": f"Bearer {authorization}"},
     )
     resources = resource_res.json()
     print(resources)
@@ -24,10 +24,10 @@ def get_issues(authorization: str = Header(None)):
         raise HTTPException(status_code=400, detail="Unable to get cloudId")
 
     CLOUD_ID = resources[0]["id"]
-
+    print(f"Using CLOUD_ID: {CLOUD_ID}")
     jira_res = requests.get(
         f"https://api.atlassian.com/ex/jira/{CLOUD_ID}/rest/api/3/search?jql=project=project-1",
-        headers={"Authorization": f"Bearer {token}"},
+        headers={"Authorization": f"Bearer {authorization}"},
     )
     if not jira_res.ok:
         raise HTTPException(status_code=jira_res.status_code, detail=jira_res.text)
