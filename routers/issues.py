@@ -4,7 +4,7 @@ import json
 
 router = APIRouter()
 # CLOUD_ID = "b574c564-8337-4c3b-8e84-786d837d294b"  # In-memory store (can use database/session in prod)
-CLIENT_ID = "961741a0-c80a-4729-a1ba-2123a30bfb44"
+CLOUD_ID = "961741a0-c80a-4729-a1ba-2123a30bfb44"
 
 @router.get("/jira-issues")
 def get_issues(authorization: str = Header(None)):
