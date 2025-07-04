@@ -30,13 +30,25 @@ def jira_callback(code: str):
         "code": code,
         "redirect_uri": REDIRECT_URI,
     }
+    
 
     response = requests.post(token_url, json=payload)
     print(response.json())
     if response.status_code == 200:
         access_token = response.json().get("access_token")
+        resource_res = requests.get(
+        "https://api.atlassian.com/oauth/token/accessible-resources",
+        headers={"Authorization": f"Bearer {access_token}"},
+        )
+        resources = resource_res.json()
+        print(resources)
+        if not resources:
+            raise HTTPException(status_code=400, detail="Unable to get cloudId")
+
+        CLOUD_ID = resources[0]["id"]
+        print(f"Using CLOUD_ID: {CLOUD_ID}")
         print(f"Access Token: {access_token}")
-        redirect_url = f"http://localhost:5173/jira-success?token={access_token}"
+        redirect_url = f"http://localhost:5173/jira-success?token={access_token}&cloudId={CLOUD_ID}"
         return RedirectResponse(redirect_url)
     else:
         raise HTTPException(status_code=500, detail="Token exchange failed")
