@@ -7,19 +7,20 @@ from io import BytesIO
 import traceback
 from config import CLIENT_ID, CLIENT_SECRET, REDIRECT_URI
 router = APIRouter()
-
+import datetime
+from datetime import datetime, timedelta
 
 @router.get("/jira-connect")
 def connect_jira():
     scope = f"read%3Ajira-work%20manage%3Ajira-project%20manage%3Ajira-configuration%20read%3Ajira-user%20write%3Ajira-work%20manage%3Ajira-webhook%20manage%3Ajira-data-provider"
     state = CLIENT_SECRET
     auth_url = (
-        # f"https://auth.atlassian.com/authorize?audience=api.atlassian.com&client_id=PFQ5sV4ckENP6BezRXHNWXYw7aTG44eV&scope=read%3Ajira-work%20manage%3Ajira-project%20manage%3Ajira-configuration%20read%3Ajira-user%20write%3Ajira-work%20manage%3Ajira-webhook%20manage%3Ajira-data-provider&redirect_uri=http%3A%2F%2Flocalhost%3A8000%2Fjira-callback&state=${state}&response_type=code&prompt=consent"
-        f"https://auth.atlassian.com/authorize?audience=api.atlassian.com&client_id={CLIENT_ID}&scope={scope}&redirect_uri=https%3A%2F%2Fbrd-backend-xli6.onrender.com%2Fjira-callback&state={state}&response_type=code&prompt=consent"
+        f"https://auth.atlassian.com/authorize?audience=api.atlassian.com&client_id=PFQ5sV4ckENP6BezRXHNWXYw7aTG44eV&scope=read%3Ajira-work%20manage%3Ajira-project%20manage%3Ajira-configuration%20read%3Ajira-user%20write%3Ajira-work%20manage%3Ajira-webhook%20manage%3Ajira-data-provider&redirect_uri=http%3A%2F%2Flocalhost%3A8000%2Fjira-callback&state=${state}&response_type=code&prompt=consent"
+        # f"https://auth.atlassian.com/authorize?audience=api.atlassian.com&client_id={CLIENT_ID}&scope={scope}&redirect_uri=https%3A%2F%2Fbrd-backend-xli6.onrender.com%2Fjira-callback&state={state}&response_type=code&prompt=consent"
     )
     return RedirectResponse(auth_url)
 
-
+from token_store import token_data
 @router.get("/jira-callback")
 def jira_callback(code: str):
     token_url = "https://auth.atlassian.com/oauth/token"
@@ -35,10 +36,15 @@ def jira_callback(code: str):
     response = requests.post(token_url, json=payload)
     print(response.json())
     if response.status_code == 200:
-        access_token = response.json().get("access_token")
+        data= response.json()
+        token_data["access_token"] = data["access_token"]
+        token_data["refresh_token"] = data.get("refresh_token")
+        token_data["expires_at"] = datetime.utcnow() + timedelta(seconds=data["expires_in"])
+        print(f"Access Token: {token_data['expires_at']}")
+
         resource_res = requests.get(
         "https://api.atlassian.com/oauth/token/accessible-resources",
-        headers={"Authorization": f"Bearer {access_token}"},
+        headers={"Authorization": f"Bearer {data['access_token']}"},
         )
         resources = resource_res.json()
         print(resources)
@@ -47,8 +53,10 @@ def jira_callback(code: str):
 
         CLOUD_ID = resources[0]["id"]
         print(f"Using CLOUD_ID: {CLOUD_ID}")
-        print(f"Access Token: {access_token}")
-        redirect_url = f"http://localhost:5173/jira-success?token={access_token}&cloudId={CLOUD_ID}"
+        print(f"Access Token: {data['access_token']}")
+        base_url = f"https://686b918e42132b0008400bf6--brd-to-jira.netlify.app/"
+        #base_url = f"http://localhost:5173/"
+        redirect_url = f"{base_url}jira-success?token={data['access_token']}&cloudId={token_data['cloud_id']}"
         return RedirectResponse(redirect_url)
     else:
         raise HTTPException(status_code=500, detail="Token exchange failed")
