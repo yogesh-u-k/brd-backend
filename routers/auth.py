@@ -356,7 +356,7 @@ def delete_all_projects(
         url = f"https://api.atlassian.com/ex/jira/{cloudId}/rest/api/3/project/search"
         project_list = []
         start_at = 0
-        max_results = 80
+        max_results = 100
 
         while True:
             paged_url = f"{url}?startAt={start_at}&maxResults={max_results}"
@@ -408,3 +408,57 @@ def delete_all_projects(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=tb
         )
+
+
+@router.delete("/delete-project")
+def delete_project(
+    token: str = Form(...),
+    cloudId: str = Form(...),
+    projectKey: str = Form(...)
+
+):
+
+    try:
+
+        token = token.replace("Bearer ", "")
+
+        headers = {
+
+            "Authorization": f"Bearer {token}",
+
+            "Accept": "application/json"
+
+        }
+ 
+        delete_url = f"https://api.atlassian.com/ex/jira/{cloudId}/rest/api/3/project/{projectKey}"
+
+        response = requests.delete(delete_url, headers=headers)
+ 
+        if response.status_code == 204:
+
+            return {"message": f"✅ Project {projectKey} deleted successfully."}
+
+        else:
+
+            raise HTTPException(
+
+                status_code=response.status_code,
+
+                detail=f"❌ Failed to delete project {projectKey}: {response.text}"
+
+            )
+ 
+    except Exception as e:
+
+        tb = traceback.format_exc()
+
+        print("Unhandled Exception:\n", tb)
+
+        raise HTTPException(
+
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+
+            detail=tb
+
+        )
+ 
