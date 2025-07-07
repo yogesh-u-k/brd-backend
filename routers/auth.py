@@ -90,7 +90,9 @@ def jira_callback(code: str):
         CLOUD_ID = resources[0]["id"]
         print(f"Using CLOUD_ID: {CLOUD_ID}")
         print(f"Access Token: {access_token}")
-        redirect_url = f"http://localhost:5173/jira-success?token={access_token}&cloudId={CLOUD_ID}"
+        base_url = f"https://brd-to-jira.netlify.app/"
+        #base_url = f"http://localhost:5173/"
+        redirect_url = f"{base_url}jira-success?token={access_token}&cloudId={CLOUD_ID}"
         return RedirectResponse(redirect_url)
     else:
         raise HTTPException(status_code=500, detail="Token exchange failed")
