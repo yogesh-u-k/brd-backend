@@ -1,9 +1,8 @@
 from jose import jwt
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
+from config import SECRET_KEY  # Ensure you have a SECRET_KEY in your config
 
-
-SECRET_KEY = "VzBP0xgy_QQm7gV1IRo2zOsDcKpQjZeZdHfxbKZB0gI"
 ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 
