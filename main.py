@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routers import base, auth, issues,load,getStories,createStories,getProjects
+from routers import base, auth, issues,load,getStories,createStories,getProjects,uselogin,registration
 import uvicorn
 app = FastAPI()
 
@@ -21,7 +21,8 @@ app.include_router(load.router, tags=["load"])
 app.include_router(getStories.router, tags=["getStories"])  
 app.include_router(createStories.router, tags=["createStories"])  
 app.include_router(getProjects.router,  tags=["getProjects"])
-
+app.include_router(uselogin.router, tags=["uselogin"])
+app.include_router(registration.router, tags=["registration"])
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

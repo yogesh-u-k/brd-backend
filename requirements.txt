@@ -7,3 +7,8 @@ python-multipart
 pydantic
 httpx
 typing
+sqlalchemy[asyncio]
+asyncpg
+passlib[bcrypt]
+python-jose[cryptography]
+pydantic-settings

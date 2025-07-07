@@ -311,7 +311,7 @@ def delete_all_projects(
         url = f"https://api.atlassian.com/ex/jira/{cloudId}/rest/api/3/project/search"
         project_list = []
         start_at = 0
-        max_results = 50
+        max_results = 80
 
         while True:
             paged_url = f"{url}?startAt={start_at}&maxResults={max_results}"
