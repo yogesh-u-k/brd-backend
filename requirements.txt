@@ -14,3 +14,4 @@ python-jose[cryptography]
 pydantic-settings
 pydantic[email]
 email-validator
+openpyxl
