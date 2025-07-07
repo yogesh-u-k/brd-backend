@@ -54,7 +54,7 @@ def jira_callback(code: str):
         CLOUD_ID = resources[0]["id"]
         print(f"Using CLOUD_ID: {CLOUD_ID}")
         print(f"Access Token: {data['access_token']}")
-        base_url = f"https://686b918e42132b0008400bf6--brd-to-jira.netlify.app/"
+        base_url = f"https://brd-to-jira.netlify.app/"
         #base_url = f"http://localhost:5173/"
         redirect_url = f"{base_url}jira-success?token={data['access_token']}&cloudId={token_data['cloud_id']}"
         return RedirectResponse(redirect_url)
