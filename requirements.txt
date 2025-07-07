@@ -12,3 +12,5 @@ asyncpg
 passlib[bcrypt]
 python-jose[cryptography]
 pydantic-settings
+pydantic[email]
+email-validator
