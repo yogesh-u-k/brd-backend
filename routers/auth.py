@@ -21,6 +21,47 @@ def connect_jira():
     return RedirectResponse(auth_url)
 
 from token_store import token_data
+
+# @router.get("/jira-callback")
+# def jira_callback(code: str):
+#     token_url = "https://auth.atlassian.com/oauth/token"
+#     payload = {
+#         "grant_type": "authorization_code",
+#         "client_id": CLIENT_ID,
+#         "client_secret": CLIENT_SECRET,
+#         "code": code,
+#         "redirect_uri": REDIRECT_URI,
+#     }
+    
+
+#     response = requests.post(token_url, json=payload)
+#     print(response.json())
+#     if response.status_code == 200:
+#         data= response.json()
+#         token_data["access_token"] = data["access_token"]
+#         token_data["refresh_token"] = data.get("refresh_token")
+#         token_data["expires_at"] = datetime.utcnow() + timedelta(seconds=data["expires_in"])
+#         print(f"Access Token: {token_data['expires_at']}")
+
+#         resource_res = requests.get(
+#         "https://api.atlassian.com/oauth/token/accessible-resources",
+#         headers={"Authorization": f"Bearer {data['access_token']}"},
+#         )
+#         resources = resource_res.json()
+#         print(resources)
+#         if not resources:
+#             raise HTTPException(status_code=400, detail="Unable to get cloudId")
+
+#         CLOUD_ID = resources[0]["id"]
+#         print(f"Using CLOUD_ID: {CLOUD_ID}")
+#         print(f"Access Token: {data['access_token']}")
+#         base_url = f"https://brd-to-jira.netlify.app/"
+#         #base_url = f"http://localhost:5173/"
+#         redirect_url = f"{base_url}jira-success?token={data['access_token']}&cloudId={CLOUD_ID}"
+#         return RedirectResponse(redirect_url)
+#     else:
+#         raise HTTPException(status_code=500, detail="Token exchange failed")
+
 @router.get("/jira-callback")
 def jira_callback(code: str):
     token_url = "https://auth.atlassian.com/oauth/token"
@@ -36,15 +77,10 @@ def jira_callback(code: str):
     response = requests.post(token_url, json=payload)
     print(response.json())
     if response.status_code == 200:
-        data= response.json()
-        token_data["access_token"] = data["access_token"]
-        token_data["refresh_token"] = data.get("refresh_token")
-        token_data["expires_at"] = datetime.utcnow() + timedelta(seconds=data["expires_in"])
-        print(f"Access Token: {token_data['expires_at']}")
-
+        access_token = response.json().get("access_token")
         resource_res = requests.get(
         "https://api.atlassian.com/oauth/token/accessible-resources",
-        headers={"Authorization": f"Bearer {data['access_token']}"},
+        headers={"Authorization": f"Bearer {access_token}"},
         )
         resources = resource_res.json()
         print(resources)
@@ -53,13 +89,12 @@ def jira_callback(code: str):
 
         CLOUD_ID = resources[0]["id"]
         print(f"Using CLOUD_ID: {CLOUD_ID}")
-        print(f"Access Token: {data['access_token']}")
-        base_url = f"https://brd-to-jira.netlify.app/"
-        #base_url = f"http://localhost:5173/"
-        redirect_url = f"{base_url}jira-success?token={data['access_token']}&cloudId={CLOUD_ID}"
+        print(f"Access Token: {access_token}")
+        redirect_url = f"http://localhost:5173/jira-success?token={access_token}&cloudId={CLOUD_ID}"
         return RedirectResponse(redirect_url)
     else:
         raise HTTPException(status_code=500, detail="Token exchange failed")
+
 
 #when jira is connected i want to create a project in jira will upload a excel file with the project details create a api to upload the file and create the project in the jira provide me the overall code for this
 
