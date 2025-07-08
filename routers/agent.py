@@ -95,7 +95,10 @@ Only return the array. DO NOT wrap in any object or explanation.
             """.strip()
 
             messages = [{"role": "system", "content": prompt}]
-            asyncio.create_task(llm.ainvoke(messages))
+            try:
+                await asyncio.wait_for(llm.ainvoke(messages), timeout=120)
+            except asyncio.TimeoutError:
+                await handler.queue.put("[[END]]")
 
             story_started = False
             async for token in handler.stream():
