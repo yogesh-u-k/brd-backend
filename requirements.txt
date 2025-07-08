@@ -15,3 +15,10 @@ pydantic-settings
 pydantic[email]
 email-validator
 openpyxl
+langchain
+openai
+python-docx
+PyPDF2
+docx2txt
+langchain-openai
+sse-starlette
