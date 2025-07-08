@@ -11,10 +11,9 @@ import asyncio
 load_dotenv()
 router = APIRouter()
 
-# Request model with story_count included
 class JiraRequest(BaseModel):
     user_input: str
-    story_count: int = 30  # default if user doesn't pass this
+    story_count: int = 10  # default if not provided
 
 # Streaming handler
 class StreamHandler(AsyncCallbackHandler):
@@ -34,20 +33,19 @@ class StreamHandler(AsyncCallbackHandler):
                 break
             yield token
 
-# Streaming endpoint
 @router.post("/generate-jira-story-stream")
 async def generate_jira_story_stream(payload: JiraRequest):
     user_input = payload.user_input.strip()
-    target_story_count = payload.story_count
+    story_count = payload.story_count
 
     if not user_input:
         raise HTTPException(status_code=400, detail="user_input is required")
-    if target_story_count <= 0 or target_story_count > 500:
+    if story_count <= 0 or story_count > 500:
         raise HTTPException(status_code=400, detail="story_count must be between 1 and 500")
 
     batch_size = 10
-    num_batches = target_story_count // batch_size
-    remaining = target_story_count % batch_size
+    num_batches = story_count // batch_size
+    remaining = story_count % batch_size
 
     async def batch_stream():
         yield '{"user_stories": ['
@@ -65,27 +63,35 @@ async def generate_jira_story_stream(payload: JiraRequest):
             )
 
             prompt = f"""
-You are a Business Analyst. From the following requirement, generate {current_batch_size} unique and detailed Jira user stories in this format:
-
+You are a Business Analyst. From the following requirement, generate {current_batch_size} unique and detailed Jira user stories in this exact format:
 [
     {{
-        "title": "...",
-        "summary": "...",
+        "title": "Short descriptive title (max 50 characters)",
+        "issue_type": "frontend|backend|database|devops|qa|Python developer",
         "story_type": "Feature|Bug|Task|Epic",
-        "description": "...",
+        "description": "Detailed description of what needs to be implemented",
         "priority": "High|Medium|Low",
         "story_points": "1|2|3|5|8|13",
-        "labels": ["label1", "label2"],
+        "labels": ["label1", "label2", "label3"],
         "acceptance_criteria": [
-            "Given/When/Then 1",
-            "Given/When/Then 2"
+            "Given/When/Then criterion 1",
+            "Given/When/Then criterion 2"
         ]
     }}
 ]
 
+Guidelines:
+2. Each story should be specific and actionable
+3. Include proper acceptance criteria for each story
+4. Assign appropriate story types and realistic estimates
+5. Consider technical dependencies and risks
+6. Provide timeline estimates based on story points
+7. Ensure all functional and non-functional requirements from the BRD are covered through user stories
+Return only valid JSON, no additional text or formatting.
+
 Requirement: "{user_input}"
 
-Only return the array. Do not wrap in any object or explanation.
+Only return the array. DO NOT wrap in any object or explanation.
             """.strip()
 
             messages = [{"role": "system", "content": prompt}]
@@ -105,6 +111,6 @@ Only return the array. Do not wrap in any object or explanation.
             if batch_num < num_batches + (1 if remaining else 0) - 1:
                 yield ","
 
-        yield f'], "meta": {{"message": "Generated {target_story_count} stories"}}'
+        yield f'], "meta": {{"message": "Generated {story_count} stories"}}'
 
     return StreamingResponse(batch_stream(), media_type="application/json")
