@@ -55,7 +55,7 @@ async def generate_jira_story_stream(payload: JiraRequest):
 
             handler = StreamHandler()
             llm = ChatOpenAI(
-                openai_api_key=os.getenv("OPENAI_API_KEY", OPENAI_KEY),
+                openai_api_key=OPENAI_KEY,
                 model="gpt-4",
                 streaming=True,
                 callbacks=[handler],
