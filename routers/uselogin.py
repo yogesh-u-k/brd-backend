@@ -29,5 +29,6 @@ async def login(name: str, password: str, db: AsyncSession = Depends(get_db)):
             "name": user.name,
             "email": user.email
         },
+        "token": token,
         "status code": 200
     }
