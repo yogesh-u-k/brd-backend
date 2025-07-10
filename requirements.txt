@@ -23,3 +23,6 @@ docx2txt
 langchain-openai
 sse-starlette
 bcrypt==3.2.2
+PyMuPDF
+aiofiles
+langchain-community
