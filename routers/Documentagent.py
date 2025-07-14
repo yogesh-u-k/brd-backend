@@ -46,6 +46,41 @@ def extract_batches_from_excel(file_bytes: bytes, batch_size: int = 10) -> List[
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Failed to parse Excel: {str(e)}")
 
+def extract_batches_from_csv(file_bytes: bytes, batch_size: int = 10) -> List[List[str]]:
+    try:
+        df = pd.read_csv(io.BytesIO(file_bytes))
+
+        if df.empty:
+            raise ValueError("Uploaded CSV file is empty")
+
+        row_texts = df.astype(str).apply(lambda row: " | ".join(row.values), axis=1).tolist()
+
+        if not row_texts:
+            raise ValueError("No usable rows found")
+
+        return [row_texts[i:i + batch_size] for i in range(0, len(row_texts), batch_size)]
+
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to parse CSV: {str(e)}")
+
+
+
+from docx import Document
+
+def extract_batches_from_docx(file_bytes: bytes, batch_size: int = 2) -> List[List[str]]:
+    try:
+        file_stream = io.BytesIO(file_bytes)
+        doc = Document(file_stream)
+
+        paragraphs = [para.text.strip() for para in doc.paragraphs if para.text.strip()]
+        
+        if not paragraphs:
+            raise ValueError("No text found in the .docx file")
+
+        return [paragraphs[i:i + batch_size] for i in range(0, len(paragraphs), batch_size)]
+    
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Failed to parse DOCX: {str(e)}")
 
 @router.post("/generate-stories-from-doc")
 async def generate_stories_from_doc(file: UploadFile = File(...), story_count: int = 10):
@@ -64,8 +99,9 @@ async def generate_stories_from_doc(file: UploadFile = File(...), story_count: i
         loader = PyMuPDFLoader(file_path)
         documents = loader.load()
         contents = [doc.page_content for doc in documents]
-        batch_size = 2
+        batch_size = min(2, story_count)
         batches = [contents[i:i + batch_size] for i in range(0, len(contents), batch_size)]
+
 
     elif file_ext == 'txt':
         temp_dir = tempfile.mkdtemp()
@@ -75,23 +111,20 @@ async def generate_stories_from_doc(file: UploadFile = File(...), story_count: i
         loader = TextLoader(file_path)
         documents = loader.load()
         contents = [doc.page_content for doc in documents]
-        batch_size = 2
+        batch_size = min(2, story_count)
         batches = [contents[i:i + batch_size] for i in range(0, len(contents), batch_size)]
 
     elif file_ext == 'csv':
-        temp_dir = tempfile.mkdtemp()
-        file_path = os.path.join(temp_dir, file.filename)
-        with open(file_path, 'wb') as f:
-            f.write(file_bytes)
-        loader = CSVLoader(file_path)
-        documents = loader.load()
-        contents = [doc.page_content for doc in documents]
         batch_size = 10
-        batches = [contents[i:i + batch_size] for i in range(0, len(contents), batch_size)]
+        batches = extract_batches_from_csv(file_bytes, batch_size=batch_size)
 
     elif file_ext == 'xlsx':
         batch_size = 10
         batches = extract_batches_from_excel(file_bytes, batch_size=batch_size)
+
+    elif file_ext == 'docx':
+        batch_size = min(2, story_count)
+        batches = extract_batches_from_docx(file_bytes, batch_size=batch_size)
 
     else:
         raise HTTPException(status_code=400, detail="Unsupported file format")
