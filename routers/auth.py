@@ -15,8 +15,8 @@ def connect_jira():
     scope = f"read%3Ajira-work%20manage%3Ajira-project%20manage%3Ajira-configuration%20read%3Ajira-user%20write%3Ajira-work%20manage%3Ajira-webhook%20manage%3Ajira-data-provider"
     state = CLIENT_SECRET
     auth_url = (
-        f"https://auth.atlassian.com/authorize?audience=api.atlassian.com&client_id=PFQ5sV4ckENP6BezRXHNWXYw7aTG44eV&scope=read%3Ajira-work%20manage%3Ajira-project%20manage%3Ajira-configuration%20read%3Ajira-user%20write%3Ajira-work%20manage%3Ajira-webhook%20manage%3Ajira-data-provider&redirect_uri=http%3A%2F%2Flocalhost%3A8000%2Fjira-callback&state=${state}&response_type=code&prompt=consent"
-        # f"https://auth.atlassian.com/authorize?audience=api.atlassian.com&client_id={CLIENT_ID}&scope={scope}&redirect_uri=https%3A%2F%2Fbrd-backend-xli6.onrender.com%2Fjira-callback&state={state}&response_type=code&prompt=consent"
+        # f"https://auth.atlassian.com/authorize?audience=api.atlassian.com&client_id=PFQ5sV4ckENP6BezRXHNWXYw7aTG44eV&scope=read%3Ajira-work%20manage%3Ajira-project%20manage%3Ajira-configuration%20read%3Ajira-user%20write%3Ajira-work%20manage%3Ajira-webhook%20manage%3Ajira-data-provider&redirect_uri=http%3A%2F%2Flocalhost%3A8000%2Fjira-callback&state=${state}&response_type=code&prompt=consent"
+        f"https://auth.atlassian.com/authorize?audience=api.atlassian.com&client_id={CLIENT_ID}&scope={scope}&redirect_uri=https%3A%2F%2Fbrd-backend-8iup.onrender.com%2Fjira-callback&state={state}&response_type=code&prompt=consent"
     )
     return RedirectResponse(auth_url)
 
